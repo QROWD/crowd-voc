@@ -5,5 +5,5 @@ The first goal of the vocabulary is to allow crowdsourcing projects to describe 
 
 ### Acknowledgments
 
-Crowd-Voc was set up by the QROWD project (http://qrowd-project.eu/, which received funding from the European Union’s Horizon 2020
+Crowd-Voc was set up by the QROWD project (http://qrowd-project.eu/), which received funding from the European Union’s Horizon 2020
 research and innovation programme under grant agreement No 723088. We would also like to thank the participants of the project networking workshop help at HCOMP2018 in Zurich, Switzerland (https://hcompnetworking.wordpress.com/).
