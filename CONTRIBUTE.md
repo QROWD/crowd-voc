@@ -1,6 +1,6 @@
 ## Guidelines for contributing
 
-CrowdVoc intends to be a community effort and as such welcomes different forms of contributions.
+Crowd-Voc intends to be a community effort and as such welcomes different forms of contributions.
 
 #### Issues
 Discussion is handled by opening or participating to GitHub issues. We have created the following labels:
