@@ -24,7 +24,7 @@ A requirement is a concise description of a feature deemed useful for the vocabu
 **Alignment**: For the proposal and discussion of alignments with other vocabularies and ontologies, including property re-use.
 
 
-**Classes / Properties** For the proposal and discussion of class and property definitions within the vocabulary. Commonly, these should be linked to requirements and use cases.
+**Classes / Properties**: For the proposal and discussion of class and property definitions within the vocabulary. Commonly, these should be linked to requirements and use cases.
 
 #### Pull requests
 
