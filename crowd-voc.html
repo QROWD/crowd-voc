@@ -24,7 +24,9 @@
   <body>
     <section id='abstract'>
       <p>
-Crowd-voc aims at providing a common vocabulary to describe datasets created through microtask crowdsourcing. The ontology aims to document crowdsourcing experiments and hence allow requesters to improve their effectivity and efficiency over time; enable repeatability and reproducibility of crowdsourcing experiments; and foster the exchange and reuse of data generated via crowdsourcing. 
+Crowd-Voc is a vocabulary for describing data that has been produced through crowdsourcing. Crowdsourcing is understood broadly, as any type of collective activity to solve a problem or achieve a goal. Data refers to the contributions of the crowd in their consolidated form, which are released in form of a 'dataset' which can be used in other contexts. 
+
+The first goal of the vocabulary is to allow crowdsourcing projects to describe what the data is about and how it came about to facilitate reuse and sharing across projects. The vocabulary should also help repeat and reproduce research that involves crowdsourcing by capturing the key design parameters of a crowdsourcing task and the way crowd answers have been validated, aggregated and otherwise processed before their release as a dataset. Finally, the vocabulary sets the ground for acknowledging contributions by the crowd, towards a fairer model for licensing crowdsourced data.
       
       </p>
     </section>
@@ -57,7 +59,6 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
     <tr><td><b>rdfs</b></td><td>&lt;http://www.w3.org/2000/01/rdf-schema#&gt;</td></tr>
     <tr><td><b>xsd</b></td><td>&lt;http://www.w3.org/2001/XMLSchema#&gt;</td></tr>
     <tr><td><b>dcterms</b></td><td>&lt;http://purl.org/dc/terms/#&gt;</td></tr>
-    <tr><td><b>vocab-org</b></td><td>&lt;https://www.w3.org/TR/vocab-org/#&gt;</td></tr>
     <tr><td><b>org</b></td><td>&lt;http://www.w3.org/ns/org#&gt;</td></tr>
     <tr><td><b>s</b></td><td>&lt;http://schema.org/&gt;</td></tr>
     <tr><td><b>skos</b></td><td>&lt;http://www.w3.org/2004/02/skos/core#&gt;</td></tr>
@@ -75,11 +76,14 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
       <h2>Overview</h2>
     </section>
     <p>
-    The core of the vocabulary is shown in the figure below, we re-use whenever possible classes. The main entity is Task, a prov:Activity that describes the crowdsourcing task, ultimately generating a dcat:Dataset. the task is associated with a Crowd. A Crowd is a subclass of prov:Agent, added by us to complement current prov subclasses prov:Organization, prov:Person and prov:SoftwareAgent. A Crowd has members of type prov:Person, the Crowdworkers. Crowdworkers may participate in many Crowds assembled to run different Tasks. To establish the link between Crowds and Crowdworkers, we reuse the Organization ontology, making Crowd an instance of vocab-org:Organization, allowing the usage of the vocab-org:hasMember property.  
+The core of the vocabulary is shown in the figure below. We reuse as much as possible existing vocabularies. The main entity is <b>Task</b>, a <b>prov:Activity</b> that describes the crowdsourcing task, ultimately generating a <b>dcat:Dataset</b>. An instance of <b>Task</b> is linked to a <b>Crowd</b>, which is a subclass of <b>prov:Agent</b>. Crowds consists of instances of <b>Crowdworker</b>, a type of <b>prov:Person</b>. A crowdworker may be part of many crowds, assembled to run different tasks. To establish the link between crowds and crowdworkers, we reuse the <b>Organization</b> ontology, making <b>Crowd</b> an instance of <b>vocab-org:Organization</b>, allowing the usage of the <b>vocab-org:hasMember</b> property. Crowdworkers are identified by ids, depending on the platform where the crowdsourcing task is being run. The aim is not to store personal data about contributors, which is not accessible when running a crowdsourcing task, but to be able to distinguish between multiple contributors - this is needed when validating and aggregating the data submitted by the crowd. The crowd of a task refers to the set of contributors to the task rather than all users registered on the crowdsourcing platform.
+    </p>
+
+    <p> A task is comprised by an rdf:list of Questions that models the order on which questions are asked to crowdworkers. Each question has a hasText property, and a seeAlso that links to a more complex representation of the question, if available.
     </p>
 
 
-   <img src="./img/Example1.png" alt="contract classification" style="border:0px" height="400" width="500"> 
+   <img src="./img/Example-Task-Questions.png" alt="contract classification" style="border:0px" height="500" width="900"> 
 
 
 <div class="example">
@@ -87,17 +91,25 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 	<pre class="example highlight preprint">
     ex:aTask
         a prov:Activity;
-	dcterms:hasPart ex:subTask1;
-	dcterms:hasPart ex:subTask2;
+        a crowd-voc:Task;
 	dcterms:description "My Crowdsourcing task"
-	prov:wasAssociatedWith ex:aCrowd .
+	prov:wasAssociatedWith ex:Crowd .
+	crowd-voc:hasQuestion (ex:question1,ex:question2)
 
-    ex:subTask1
-    	a prov:Activity;
-	dcterms:description "Identify cat in image"
-    ex:subTask2
-    	a prov:Activity;
-	dcterms:description "Judge if cat is dead or alive"
+    ex:Crowd
+    	a org:Organization
+	org:hasMember ex:a_crowdworker
+
+    ex:a_crowdworker
+    	a prov:Person
+
+
+    ex:question1
+    	a crowd-voc:Question;
+	crowd-voc:hasText "Cars in images"
+    ex:question2
+    	a crowd-voc:Question;
+	crowd-voc:hasText "Cars at traffic lights in images"
 
     ex:aCrowd
     	a crowd-voc:Crowd;
@@ -109,36 +121,40 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 
     ex:generatedDataset 
     	a dcat:dataset;
-	dcterms:title "Dataset generated by the Task";
+	dcterms:title "Dataset generated by the task";
 	prov:wasGeneratedBy ex:aTask .
 
  	</pre>
 	</div>
 
     <p>
-    The below figure describes the subdivision of a task in subtasks. A tasks takes an input dataset and applies to each item the definition of the subtasks, to produce a dataset (of annotations, the items with metadata?). The example task is comprised by two SubTasks, one of ClassificationTask type and another of RankingTask type, each subtask is comprised by an arbitrary number of questions  
+    A task is a collection of different activities that ultimatelly results in a dataset. It can consist of subtasks of the same or different types. Our aim is to describe the design of the crowdsourcing effort, including standard classes of tasks, which are approached in a particular way in crowdsourcing (e.g., classification, sentiment analysis, transcription, review etc.) and activities the crowd was asked to carry out (e.g. answer questions, check a website, translate from one language to another etc.). The reader is provided with a broad overview of the workflow used, rather than a fully specified data or control flow, as in a workflow language.
+	
+	Each task (and all its subtasks) is linked to an input dataset (e.g. a collection of images) and an output dataset, which the crowd has helped produce. The output dataset is a consolidated version of the answers provided by the crowd, including validation, aggregation etc. A task can contain several questions, which refer to the exact wording used to seek contributions (e.g. "Identify all people, places, and organisations in the following paragraph").
+	
+    In the example below, the task is comprised by two subtasks, a <b>ClassificationTask</b> and a <b>SentimentAnalysisTask</b>, each with one question. 
 
-    We assume that the task is applied to each item in the dataset (this needs to be constrained somewhere, SHACL rule!), and that all members of the assembled crowd did all (Question: Drop-out modelling?)
+    The below figure describes the subdivision of a task in subtasks, to model more complex situations on which different tasks (possibly with different crowds) are applied. The subtask list is modeled as a rdf:list of Tasks. Each subtask takes as input the dataset generated by the previous task. The result of the last subtask is also the final output of the general task.
     </p>
 
 
-   <img src="./img/Example2.png" alt="Task and subtask" style="border:0px" height="400" width="750"> 
+   <img src="./img/Example-SubTasks.png" alt="Task and subtask" style="border:0px" height="500" width="900"> 
 
 <div class="example">
-	<div class="example-title"><span>Task division in Subtasks </span></div>
+	<div class="example-title"><span>Task division in subtasks </span></div>
 	<pre class="example highlight preprint">
     ex:aTask
         a prov:Activity;
 	dcterms:hasPart ex:subTask1;
 	dcterms:hasPart ex:subTask2;
-	dcterms:description "My Crowdsourcing task";
+	dcterms:description "My crowdsourcing task";
 	prov:wasAssociatedWith ex:aCrowd;
 	prov:used ex:InputDataset;
 	prov:generated ex:OutputDataset;
 
     ex:subTask1
     	a prov:Activity;
-	dcterms:description "Identify if kitten in image";
+	dcterms:description "Brexit tweets";
 	a crowd-voc:ClassificationTask .
 	crowd-voc:hasAggregation ex:s1_aggregation
 	crowd-voc:hasQCMechanism ex:s1_qc
@@ -147,7 +163,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 
     ex:subTask2
     	a prov:Activity;
-	dcterms:description "Determine if the image is happy";
+	dcterms:description "Sentiment analysis on tweets";
 	a crowd-voc:SentimentAnalysisTask .
 	crowd-voc:hasAggregation ex:s2_aggregation
 	crowd-voc:hasQCMechanism ex:s2_qc
@@ -167,11 +183,11 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 	
     ex:s1_q1
     	a crowd-voc:Question;
-    	crowd_voc:question_text "Do you see a kitty in the image?"
+    	crowd_voc:question_text "Does the tweet mention Brexit?"
 
     ex:s2_q1
     	a crowd-voc:Question;
-    	crowd_voc:question_text "Does the image transmits happiness?"
+    	crowd_voc:question_text "Is this a happy tweet?"
 
 
  	</pre>
@@ -236,10 +252,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A Crowdsourcing Task</p>
+    <p>A crowdsourcing task</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -257,10 +273,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A task of content verification</p>
+    <p>A task where the crowdworkers are asked to check predefined properties of an item by carrying out specific checks or consulting external sources</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -276,7 +292,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A task of classification</p>
+    <p>A generic classification task on text or other media</p>
 
     <dl class="description">
 	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
@@ -298,7 +314,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A task of classification</p>
+    <p>A task of finding a set of predefined characteristics of an item, for instance the author or year of a book</p>
 
     <dl class="description">
 	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
@@ -319,10 +335,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A task of classification</p>
+    <p>A generic task of transcription for different types of media</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -340,10 +356,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A ranking task</p>
+    <p>A task ranking different items</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -359,10 +375,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A Moderation task</p>
+    <p>A task moderating content from other tasks</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -379,10 +395,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A ContentCreation task</p>
+    <p>A task producing new content, for instance free labels or descriptions for items, shortened versions of text, media etc.</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -399,10 +415,10 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
    <p>   <strong>IRI:</strong> TaskIRI </p>
 	     
    <div class="comment">
-    <p>A Moderation task</p>
+    <p>A sentiment analysis task on text or other media</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -423,7 +439,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
     <p>A SubTask that is part of CrowdSourcing Task, for example, an image labelling task might consists of one subTask about identifying a certain entity in the image, and another about cropping the image to center the</p>
 
     <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
+	<dt>characteristics (is disjoint, in range of, has subclasses, etc)</dt>
      <dd>  <a href="href" title="title">class or property name</a>
 	<sup class="type-c" title="class">c</sup>
      </dd>
@@ -431,26 +447,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 
     </div>
 
-</div>
 
-   <div = id="ClassName" class="entity" >
-	      <h3> SubTask </h3>
-	      <sup class="type-c" title="class">c</sup>
-  	      <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#classes">Class ToC</a>
-   </span>
-   <p>   <strong>IRI:</strong> SubTaskIRI </p>
-	     
-   <div class="comment">
-    <p>A SubTask that is part of CrowdSourcing Task, for example, an image labelling task might consists of one subTask about identifying a certain entity in the image, and another about cropping the image to center the</p>
-
-    <dl class="description">
-	<dt>characteristics (is disjoint, in range of, hassubclasses, etc)</dt>
-     <dd>  <a href="href" title="title">class or property name</a>
-	<sup class="type-c" title="class">c</sup>
-     </dd>
-    </dl>
-
-    </div>
 
 </div>
    <div = id="ClassName" class="entity" >
@@ -478,7 +475,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 </div>
 
    <div = id="ClassName" class="entity" >
-	      <h3> Quality Control Mechanism </h3>
+	      <h3> Quality control mechanism </h3>
 	      <sup class="type-c" title="class">c</sup>
   	      <span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#classes">Class ToC</a>
    </span>
@@ -486,7 +483,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 	     
    <div class="comment">
 	   <p>
-	Quality control mechanism applied to a task: verifiable/control question, pre-screening/test question, honeypot(sample-based filtering), agreement-based/consensus, None
+	Quality control mechanism applied to a task: verifiable/control question, pre-screening/test question, honeypot(sample-based filtering), agreement-based/consensus, none
 
 	   </p>
 
@@ -508,7 +505,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 	<h2>Properties</h2>
       
       <div class="reused-properties">
-	<h3>Reused Properties</h3>
+	<h3>Reused properties</h3>
 	      <ul class="hlist">
 		<li>  dcterms:hasPart </li> 
 		<li>  prov:used </li> 
@@ -552,7 +549,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 
 
       <div class="own-properties">
-	<h3>Own Properties</h3>
+	<h3>Own properties</h3>
 	      <ul class="hlist">
 		<li>  hasAggregationMethod </li> 
 		<li>  hasQCMechanism </li> 
@@ -724,6 +721,7 @@ Crowd-voc aims at providing a common vocabulary to describe datasets created thr
 
     <section data-dfn-for="crowd-voc">
       <h2>Acknowledgements</h2>
+	  Crowd-Voc was set up by the QROWD project (http://qrowd-project.eu/), which received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 723088. We would also like to thank the participants of the project networking workshop help at HCOMP2018 in Zurich, Switzerland (https://hcompnetworking.wordpress.com/).
 
     </section>
   </body>
