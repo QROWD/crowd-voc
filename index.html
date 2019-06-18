@@ -24,7 +24,6 @@
   <body>
     <section id='abstract'>
       <p>
-	      
 Crowd-Voc is a vocabulary for describing data that has been produced through crowdsourcing. Crowdsourcing is understood broadly, as any type of collective activity to solve a problem or achieve a goal. Data refers to the contributions of the crowd in their consolidated form, which are released in form of a 'dataset' which can be used in other contexts. 
 
 The first goal of the vocabulary is to allow crowdsourcing projects to describe what the data is about and how it came about to facilitate reuse and sharing across projects. The vocabulary should also help repeat and reproduce research that involves crowdsourcing by capturing the key design parameters of a crowdsourcing task and the way crowd answers have been validated, aggregated and otherwise processed before their release as a dataset. Finally, the vocabulary sets the ground for acknowledging contributions by the crowd, towards a fairer model for licensing crowdsourced data.
@@ -60,7 +59,6 @@ The first goal of the vocabulary is to allow crowdsourcing projects to describe 
     <tr><td><b>rdfs</b></td><td>&lt;http://www.w3.org/2000/01/rdf-schema#&gt;</td></tr>
     <tr><td><b>xsd</b></td><td>&lt;http://www.w3.org/2001/XMLSchema#&gt;</td></tr>
     <tr><td><b>dcterms</b></td><td>&lt;http://purl.org/dc/terms/#&gt;</td></tr>
-    <tr><td><b>vocab-org</b></td><td>&lt;https://www.w3.org/TR/vocab-org/#&gt;</td></tr>
     <tr><td><b>org</b></td><td>&lt;http://www.w3.org/ns/org#&gt;</td></tr>
     <tr><td><b>s</b></td><td>&lt;http://schema.org/&gt;</td></tr>
     <tr><td><b>skos</b></td><td>&lt;http://www.w3.org/2004/02/skos/core#&gt;</td></tr>
@@ -78,13 +76,14 @@ The first goal of the vocabulary is to allow crowdsourcing projects to describe 
       <h2>Overview</h2>
     </section>
     <p>
+The core of the vocabulary is shown in the figure below. We reuse as much as possible existing vocabularies. The main entity is <b>Task</b>, a subclass of <b>prov:Activity</b> that describes the crowdsourcing task, ultimately generating a <b>dcat:Dataset</b>. An instance of <b>Task</b> is linked to a <b>Crowd</b>, which is a subclass of <b>prov:Agent</b>. Crowds consists of instances of <b>Crowdworker</b>, a type of <b>prov:Person</b>. A crowdworker may be part of many crowds, assembled to run different tasks. To establish the link between crowds and crowdworkers, we reuse the <b>Organization</b> ontology, making <b>Crowd</b> an instance of <b>org:Organization</b>, allowing the usage of the <b>org:hasMember</b> property. Crowdworkers are identified by ids, depending on the platform where the crowdsourcing task is being run. The aim is not to store personal data about contributors, which is not accessible when running a crowdsourcing task, but to be able to distinguish between multiple contributors - this is needed when validating and aggregating the data submitted by the crowd. The crowd of a task refers to the set of contributors to the task rather than all users registered on the crowdsourcing platform.
+    </p>
 
-The core of the vocabulary is shown in the figure below. We reuse as much as possible existing vocabularies. The main entity is <b>Task</b>, a <b>prov:Activity</b> that describes the crowdsourcing task, ultimately generating a <b>dcat:Dataset</b>. An instance of <b>Task</b> is linked to a <b>Crowd</b>, which is a subclass of <b>prov:Agent</b>. Crowds consists of instances of <b>Crowdworker</b>, a type of <b>prov:Person</b>. A crowdworker may be part of many crowds, assembled to run different tasks. To establish the link between crowds and crowdworkers, we reuse the <b>Organization</b> ontology, making <b>Crowd</b> an instance of <b>vocab-org:Organization</b>, allowing the usage of the <b>vocab-org:hasMember</b> property. Crowdworkers are identified by ids, depending on the platform where the crowdsourcing task is being run. The aim is not to store personal data about contributors, which is not accessible when running a crowdsourcing task, but to be able to distinguish between multiple contributors - this is needed when validating and aggregating the data submitted by the crowd. The crowd of a task refers to the set of contributors to the task rather than all users registered on the crowdsourcing platform.
-  
+    <p> A task is comprised by an <b>rdf:list</b> of <b>Questions</b> that models the order on which questions are asked to crowdworkers. Each question has a hasText property, and a <b>rdf:seeAlso</b> that links to a more complex representation of the question, if available.
     </p>
 
 
-   <img src="./img/Example1.png" alt="contract classification" style="border:0px" height="400" width="500"> 
+   <img src="./img/Example-Task-Questions.png" alt="contract classification" style="border:0px" height="500" width="900"> 
 
 
 <div class="example">
@@ -92,73 +91,82 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 	<pre class="example highlight preprint">
     ex:aTask
         a prov:Activity;
-	dcterms:hasPart ex:subTask1;
-	dcterms:hasPart ex:subTask2;
-	dcterms:description "My crowdsourcing task"
-	prov:wasAssociatedWith ex:aCrowd .
+        a crowd-voc:Task;
+        dcterms:description "My crowdsourcing task";
+        prov:wasAssociatedWith ex:Crowd;
+        crowd-voc:hasQuestionList (ex:question1,ex:question2) .
 
-    ex:subTask1
-    	a prov:Activity;
-	dcterms:description "Cars in images"
-    ex:subTask2
-    	a prov:Activity;
-	dcterms:description "Cars at traffic lights in images"
+    ex:Crowd
+    	a org:Organization;
+        org:hasMember ex:a_crowdworker
+
+    ex:a_crowdworker
+    	a prov:Person;
+
+
+    ex:question1
+    	a crowd-voc:Question;
+        crowd-voc:hasText "Identify cars in images".
+    ex:question2
+    	a crowd-voc:Question;
+        crowd-voc:hasText "Now identify cars at traffic lights in images".
 
     ex:aCrowd
     	a crowd-voc:Crowd;
-	a prov:Agent;
-	vocab-org:hasMember ex:Crowdworker;
+        a prov:Agent;
+        vocab-org:hasMember ex:Crowdworker.
 
     ex:Crowdworker
-    	a prov:Person;
+    	a prov:Person.
 
     ex:generatedDataset 
     	a dcat:dataset;
-	dcterms:title "Dataset generated by the task";
-	prov:wasGeneratedBy ex:aTask .
+        dcterms:title "Dataset generated by the task";
+        prov:wasGeneratedBy ex:aTask .
 
  	</pre>
 	</div>
 
     <p>
-    A task is a collection of different activities that ultimatelly results in a dataset. It can consist of subtasks of the same or different types. Our aim is to describe the design of the crowdsourcing effort, including standard classes of tasks, which are approached in a particular way in crowdsourcing (e.g., classification, sentiment analysis, transcription, review etc.) and activities the crowd was asked to carry out (e.g. answer questions, check a website, translate from one language to another etc.). The reader is provided with a broad overview of the workflow used, rather than a fully specified data or control flow, as in a workflow language.
+    A task is a collection of different activities that ultimately results in a dataset. It can consist of subtasks of the same or different types. Our aim is to describe the design of the crowdsourcing effort, including standard classes of tasks, which are approached in a particular way in crowdsourcing (e.g., classification, sentiment analysis, transcription, review etc.) and activities the crowd was asked to carry out (e.g. answer questions, check a website, translate from one language to another etc.). The reader is provided with a broad overview of the workflow used, rather than a fully specified data or control flow, as in a workflow language.
 	
 	Each task (and all its subtasks) is linked to an input dataset (e.g. a collection of images) and an output dataset, which the crowd has helped produce. The output dataset is a consolidated version of the answers provided by the crowd, including validation, aggregation etc. A task can contain several questions, which refer to the exact wording used to seek contributions (e.g. "Identify all people, places, and organisations in the following paragraph").
-	
-    In the example below, the task is comprised by two subtasks, a <b>ClassificationTask</b> and a <b>SentimentAnalysisTask</b>, each with one question. 
+
+    </p>
+    <p>
+    The below figure describes the subdivision of a task in subtasks, to model more complex situations on which different tasks (possibly with different crowds) are applied. The subtask list is modeled as a rdf:list of Tasks. Each subtask takes as input the dataset generated by the previous task. 
     </p>
 
 
-   <img src="./img/Example2.png" alt="Task and subtask" style="border:0px" height="400" width="750"> 
+   <img src="./img/Example-SubTasks.png" alt="Task and subtask" style="border:0px" height="500" width="900"> 
 
 <div class="example">
 	<div class="example-title"><span>Task division in subtasks </span></div>
 	<pre class="example highlight preprint">
     ex:aTask
         a prov:Activity;
-	dcterms:hasPart ex:subTask1;
-	dcterms:hasPart ex:subTask2;
-	dcterms:description "My crowdsourcing task";
-	prov:wasAssociatedWith ex:aCrowd;
-	prov:used ex:InputDataset;
-	prov:generated ex:OutputDataset;
+        dcterms:description "My crowdsourcing task";
+        prov:wasAssociatedWith ex:aCrowd;
+        prov:used ex:InputDataset;
+        prov:generated ex:OutputDataset;
+        crowd-voc:hasSubTasks (ex:question1,ex:question2) .
 
     ex:subTask1
-    	a prov:Activity;
-	dcterms:description "Brexit tweets";
-	a crowd-voc:ClassificationTask .
-	crowd-voc:hasAggregation ex:s1_aggregation
-	crowd-voc:hasQCMechanism ex:s1_qc
-	crowd-voc:hasQuestion ex:s1_q1
+    	a crowd-voc:Task;
+        dcterms:description "Brexit tweets";
+        a crowd-voc:ClassificationTask .
+        crowd-voc:hasAggregation ex:s1_aggregation
+        crowd-voc:hasQCMechanism ex:s1_qc
+        crowd-voc:hasQuestion ex:s1_q1
 
 
     ex:subTask2
-    	a prov:Activity;
-	dcterms:description "Sentiment analysis on tweets";
-	a crowd-voc:SentimentAnalysisTask .
-	crowd-voc:hasAggregation ex:s2_aggregation
-	crowd-voc:hasQCMechanism ex:s2_qc
-	crowd-voc:hasQuestion ex:s2_q1
+    	a crowd-voc:Task;
+        dcterms:description "Sentiment analysis on tweets";
+        a crowd-voc:SentimentAnalysisTask .
+        crowd-voc:hasAggregation ex:s2_aggregation
+        crowd-voc:hasQCMechanism ex:s2_qc
+        crowd-voc:hasQuestion ex:s2_q1
 
     ex:s1_aggregation
     	a crowd-voc:AggregationMethod
@@ -201,9 +209,6 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 		<li>  FeedbackTask </li> 
 		<li>  SentimentAnalysisTask </li> 
 		<li>  ContentCreationTask </li> 
-		<li>  SubTask </li> 
-		<!--	<li>  TaskType </li> -->
-		<!--<li>  Interaction </li> -->
 		<li>  Question </li>
 		<li>  QCMechanism </li>
 		<li>  AggregationMethod </li>
@@ -439,6 +444,7 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
     </div>
 
 
+
 </div>
    <div = id="ClassName" class="entity" >
 	      <h3> Question </h3>
@@ -543,8 +549,9 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 	      <ul class="hlist">
 		<li>  hasAggregationMethod </li> 
 		<li>  hasQCMechanism </li> 
-		<li>  hasQuestion </li>
-		<li>  hasInteraction </li>
+		<li>  hasQuestionList </li>
+		<li>  hasSubTasks </li>
+		<li>  hasIncentive </li>
 		<li>  hasMotivation </li>
 	      </ul>
 
@@ -563,7 +570,7 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 			<dl>
 			<dt>has domain</dt>
 			<dd>
-				<a href="#SubTask" title="">SubTask</a>
+				<a href="#Task" title="">Task</a>
 			<sup class="type-c" title="class">c</sup>
 			</dd>
 			</dl>
@@ -591,7 +598,7 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 			<dl>
 			<dt>has domain</dt>
 			<dd>
-				<a href="#SubTask" title="">SubTask</a>
+				<a href="#Task" title="">Task</a>
 			<sup class="type-c" title="class">c</sup>
 			</dd>
 			</dl>
@@ -607,7 +614,7 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
       </div>
 
 
-	<div class="entity" id="hasQuestion">
+	<div class="entity" id="hasQuestionList">
 		<h3>hasQuestion
 			<sup class="type-dp" title="data property">dp</sup>
 			<!--	<span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>  -->
@@ -623,14 +630,14 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 			<dl>
 			<dt>has domain</dt>
 			<dd>
-				<a href="#SubTask" title="">SubTask</a>
+				<a href="#Task" title="">Task</a>
 			<sup class="type-c" title="class">c</sup>
 			</dd>
 			</dl>
 			<dl>
 			<dt>has range</dt>
 			<dd>
-				<a href="#hasQuestion" title="">Question</a>
+				<a href="#Question" title="">rdf:list of Question</a>
 			<sup class="type-c" title="class">c</sup>
 			</dd>
 			</dl>
@@ -638,6 +645,36 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 	</div>
       </div>
 
+	<div class="entity" id="hasSubTasks">
+		<h3>hasSubTasks
+			<sup class="type-dp" title="data property">dp</sup>
+			<!--	<span class="backlink"> back to <a href="#toc">ToC</a> or <a href="#dataproperties">Data Property ToC</a>  -->
+			</span>
+		</h3>
+		<p>
+		List of subtasks of a task
+
+		<strong>IRI:</strong> </p>
+		<div class="description">
+			<p>
+			<strong>has characteristics:</strong> functional</p>
+			<dl>
+			<dt>has domain</dt>
+			<dd>
+				<a href="#Task" title="">Task</a>
+			<sup class="type-c" title="class">c</sup>
+			</dd>
+			</dl>
+			<dl>
+			<dt>has range</dt>
+			<dd>
+				<a href="#Task" title="">rdf:list of Task</a>
+			<sup class="type-c" title="class">c</sup>
+			</dd>
+			</dl>
+		</div>
+	</div>
+      </div>
 	<div class="entity" id="hasMotivation">
 		<h3>hasMotivation
 			<sup class="type-dp" title="data property">dp</sup>
@@ -654,7 +691,7 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 			<dl>
 			<dt>has domain</dt>
 			<dd>
-				<a href="#SubTask" title="">SubTask</a>
+				<a href="#Task" title="">Task</a>
 			<sup class="type-c" title="class">c</sup>
 			</dd>
 			</dl>
@@ -711,7 +748,6 @@ The core of the vocabulary is shown in the figure below. We reuse as much as pos
 
     <section data-dfn-for="crowd-voc">
       <h2>Acknowledgements</h2>
-	  
 	  Crowd-Voc was set up by the QROWD project (http://qrowd-project.eu/), which received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 723088. We would also like to thank the participants of the project networking workshop help at HCOMP2018 in Zurich, Switzerland (https://hcompnetworking.wordpress.com/).
 
     </section>
